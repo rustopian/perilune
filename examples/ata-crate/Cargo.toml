@@ -1,0 +1,22 @@
+[workspace]
+[package]
+name = "ata-crate"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+# Specify lib target explicitly for clarity if needed, though Cargo usually infers it
+[lib]
+crate-type = ["cdylib", "lib"] # Keep existing types
+
+[dependencies]
+# For Mollusk SVM testing
+mollusk-svm = { version = "0.1.5", optional = true }
+solana-account = { version = "2.2", optional = true }
+solana-instruction = { version = "2.2", optional = true }
+solana-pubkey = { version = "2.2", optional = true }
+solana-system-interface = { version = "1.0", optional = true }
+
+[features]
+default = []
+std = ["mollusk-svm", "solana-account", "solana-instruction", "solana-pubkey", "solana-system-interface"] 

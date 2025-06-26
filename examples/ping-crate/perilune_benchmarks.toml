@@ -1,0 +1,18 @@
+[[benchmark]]
+id = "ping_example_pinocchio"
+function = "ping_crate::instruction::process_instruction"
+entrypoints = ["pinocchio", "solana-program", "solana-program-mono", "solana-nostd-entrypoint"]
+features = [
+    { entrypoint = "pinocchio", features = ["no_std"] },
+    { entrypoint = "solana-program", features = ["solana-program"] },
+    { entrypoint = "solana-program-mono", features = ["solana-program-mono"] },
+    { entrypoint = "solana-nostd-entrypoint", features = ["solana-nostd-mono"] }
+]
+
+[[benchmark]]
+id = "ping_example_pinocchio_std"
+function = "ping_crate::instruction::process_instruction"
+entrypoints = ["pinocchio-std"]
+features = [
+    { entrypoint = "pinocchio-std", features = ["std", "host"] }
+]

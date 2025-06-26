@@ -1,0 +1,47 @@
+# perilune_benchmarks.toml for log-crate
+
+[[benchmark]]
+id = "log_solana"
+# Path to the function within this crate
+function = "log_crate::log_benches::run_log_bench"
+entrypoints = ["solana-program"]
+features = [
+    { entrypoint = "solana-program", features = ["solana-program"] }
+]
+# No specific input_data or account_setups needed for basic log test
+
+[[benchmark]]
+id = "log_solana_mono"
+function = "log_crate::log_benches::run_log_bench"
+entrypoints = ["solana-program-mono"]
+features = [
+    { entrypoint = "solana-program-mono", features = ["solana-program-mono"] }
+]
+# No specific input_data or account_setups needed for basic log test
+
+[[benchmark]]
+id = "log_pinocchio"
+function = "log_crate::log_benches::run_log_bench"
+entrypoints = ["pinocchio"]
+features = [
+    { entrypoint = "pinocchio", features = ["no_std"] } # Or simply [] if no_std is implicit or default
+]
+# No specific input_data or account_setups needed for basic log test
+
+[[benchmark]]
+id = "log_pinocchio_std"
+function = "log_crate::log_benches::run_log_bench"
+entrypoints = ["pinocchio-std"]
+features = [
+    { entrypoint = "pinocchio-std", features = ["std", "host"] }
+]
+# No specific input_data or account_setups needed for basic log test
+
+[[benchmark]]
+id = "log_solana_nostd"
+function = "log_crate::log_benches::run_log_bench"
+entrypoints = ["solana-nostd-entrypoint"]
+features = [
+    { entrypoint = "solana-nostd-entrypoint", features = ["solana-nostd-entrypoint"] }
+]
+# No specific input_data or account_setups needed for basic log test 

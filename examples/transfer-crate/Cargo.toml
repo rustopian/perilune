@@ -1,0 +1,19 @@
+[workspace]
+[package]
+name = "transfer-crate"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+# Specify lib target explicitly for clarity if needed, though Cargo usually infers it
+[lib]
+crate-type = ["cdylib", "lib"] # Keep existing types
+
+[dependencies]
+pinocchio = { version = "0.8", git = "https://github.com/rustopian/pinocchio.git", branch = "rustopian/slot-hashes-sysvar" }
+
+[features]
+ default = []
+ std = []
+ no_std = []
+ host = ["std", "pinocchio/std"]

@@ -1,0 +1,33 @@
+# Temporary workspace for a single PINOCCHIO benchmark run.
+[workspace]
+# The benchmarked crate will be copied here and listed as a member.
+members = [ "%%BENCHED_CRATE_COPY_DIR_NAME%%" ]
+
+# Defines workspace dependencies (pinocchio, etc.) needed by runner and/or benched crate.
+%%WORKSPACE_DEPENDENCIES_BLOCK%%
+
+# Pinocchio benchmark runner package.
+[package]
+name = "perilune-bench-%%BENCH_ID%%"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib"] # Compile as a dynamic system library for SBF
+
+[dependencies]
+# Depend on the benchmarked crate (copied into temp dir).
+# Enable the "provide-handlers" feature needed for SBF build of this no_std crate.
+%%CRATE_NAME%% = { path = "./%%BENCHED_CRATE_COPY_DIR_NAME%%", default-features = false, features = [ %%CRATE_FEATURES%% ] }
+
+# Depend on the Pinocchio SDK needed by this runner's code.
+# Use no default features to ensure no_std compatibility.
+%%ENTRYPOINT_SDK_DEPENDENCY_LINE%% 
+
+[profile.release]
+panic = "abort"
+lto = "thin"
+codegen-units = 1
+strip = true
+opt-level = 3 

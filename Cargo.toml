@@ -1,0 +1,11 @@
+[workspace]
+resolver = "2"
+members = [
+    "executor"
+]
+
+[workspace.package]
+edition = "2021"
+
+[workspace.dependencies]
+pinocchio = { version = "0.8", git = "https://github.com/rustopian/pinocchio.git", branch = "rustopian/slot-hashes-sysvar" } 

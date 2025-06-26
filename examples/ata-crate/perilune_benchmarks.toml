@@ -1,0 +1,16 @@
+[[benchmark]]
+type = "full_program"
+id = "ata_program"
+# Compile this program from git source
+program_source = { git = "https://github.com/solana-program/associated-token-account.git", path = "program" }
+# Test functions that will be run against the compiled program
+test_functions = [
+    { name = "create_ata_test", module = "std_benches", function = "run_create_ata_bench" },
+    { name = "create_ata_idempotent_test", module = "std_benches", function = "run_create_ata_idempotent_bench" },
+    { name = "recover_nested_test", module = "std_benches", function = "run_recover_nested_ata_bench" }
+]
+# Compile the ATA program with different entrypoints
+entrypoints = ["solana-program-mono"]
+features = [
+    { entrypoint = "solana-program-mono", features = ["std"] }
+] 

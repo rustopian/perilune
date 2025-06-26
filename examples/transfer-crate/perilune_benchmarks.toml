@@ -1,0 +1,62 @@
+# perilune_benchmarks.toml for transfer-crate
+
+[[benchmark]]
+id = "transfer_solana"
+function = "transfer_crate::solana_benches::run_transfer_bench"
+entrypoints = ["solana-program"]
+features = [
+    { entrypoint = "solana-program", features = ["solana-program"] }
+]
+# Using dotted keys for instruction_payload
+instruction_payload.tag = 0
+instruction_payload.amount = 1000000000
+# Accounts: Source, Destination, SystemProgram (to be handled by executor setup)
+
+[[benchmark]]
+id = "transfer_solana_mono"
+function = "transfer_crate::solana_program_mono_benches::run_transfer_bench"
+entrypoints = ["solana-program-mono"]
+features = [
+    { entrypoint = "solana-program-mono", features = ["solana-program-mono"] }
+]
+# Using dotted keys for instruction_payload
+instruction_payload.tag = 0
+instruction_payload.amount = 1000000000
+# Accounts: Source, Destination, SystemProgram (to be handled by executor setup)
+
+[[benchmark]]
+id = "transfer_pinocchio"
+function = "transfer_crate::pinocchio_benches::run_transfer_bench"
+entrypoints = ["pinocchio"]
+features = [
+    # Added provide-handlers for consistency with log-crate for no_std SBF builds
+    { entrypoint = "pinocchio", features = ["no_std", "provide-handlers"] }
+]
+# Using dotted keys for instruction_payload
+instruction_payload.tag = 0
+instruction_payload.amount = 1000000000
+# Accounts: Source, Destination (SystemProgram implicit for Pinocchio CPI)
+
+[[benchmark]]
+id = "transfer_pinocchio_std"
+function = "transfer_crate::pinocchio_std_benches::run_transfer_bench"
+entrypoints = ["pinocchio-std"]
+features = [
+    { entrypoint = "pinocchio-std", features = ["std", "host"] }
+]
+# Using dotted keys for instruction_payload
+instruction_payload.tag = 0
+instruction_payload.amount = 1000000000
+# Accounts: Source, Destination (SystemProgram implicit for Pinocchio CPI)
+
+[[benchmark]]
+id = "transfer_solana_nostd"
+function = "transfer_crate::nostd_entrypoint_benches::run_transfer_bench"
+entrypoints = ["solana-nostd-entrypoint"]
+features = [
+    { entrypoint = "solana-nostd-entrypoint", features = ["solana-nostd-entrypoint"] }
+]
+# Using dotted keys for instruction_payload
+instruction_payload.tag = 0
+instruction_payload.amount = 1000000000
+# Accounts: Source, Destination, SystemProgram (to be handled by executor setup) 

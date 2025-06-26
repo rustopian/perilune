@@ -1,0 +1,66 @@
+# perilune_benchmarks.toml for create-account-crate
+
+[[benchmark]]
+id = "create_account_solana"
+function = "create_account_crate::solana_benches::run_create_account_bench"
+entrypoints = ["solana-program"]
+features = [
+    { entrypoint = "solana-program", features = ["solana-program"] }
+]
+# Using dotted keys for instruction_payload
+instruction_payload.tag = 0
+instruction_payload.lamports = 500000000
+instruction_payload.space = 10
+# Accounts: Funder, NewAccount, SystemProgram (to be handled by executor setup)
+
+[[benchmark]]
+id = "create_account_solana_mono"
+function = "create_account_crate::solana_program_mono_benches::run_create_account_bench"
+entrypoints = ["solana-program-mono"]
+features = [
+    { entrypoint = "solana-program-mono", features = ["solana-program-mono"] }
+]
+# Using dotted keys for instruction_payload
+instruction_payload.tag = 0
+instruction_payload.lamports = 500000000
+instruction_payload.space = 10
+# Accounts: Funder, NewAccount, SystemProgram (to be handled by executor setup)
+
+[[benchmark]]
+id = "create_account_pinocchio"
+function = "create_account_crate::pinocchio_benches::run_create_account_bench"
+entrypoints = ["pinocchio"]
+features = [
+    { entrypoint = "pinocchio", features = ["no_std", "provide-handlers"] } 
+]
+# Using dotted keys for instruction_payload
+instruction_payload.tag = 0
+instruction_payload.lamports = 500000000
+instruction_payload.space = 10
+# Accounts: Funder, NewAccount (SystemProgram implicit for Pinocchio CPI)
+
+[[benchmark]]
+id = "create_account_pinocchio_std"
+function = "create_account_crate::pinocchio_std_benches::run_create_account_bench"
+entrypoints = ["pinocchio-std"]
+features = [
+    { entrypoint = "pinocchio-std", features = ["std", "host"] }
+]
+# Using dotted keys for instruction_payload
+instruction_payload.tag = 0
+instruction_payload.lamports = 500000000
+instruction_payload.space = 10
+# Accounts: Funder, NewAccount (SystemProgram implicit for Pinocchio CPI)
+
+[[benchmark]]
+id = "create_account_solana_nostd"
+function = "create_account_crate::nostd_entrypoint_benches::run_create_account_bench"
+entrypoints = ["solana-nostd-entrypoint"]
+features = [
+    { entrypoint = "solana-nostd-entrypoint", features = ["solana-nostd-entrypoint"] }
+]
+# Using dotted keys for instruction_payload
+instruction_payload.tag = 0
+instruction_payload.lamports = 500000000
+instruction_payload.space = 10
+# Accounts: Funder, NewAccount, SystemProgram (to be handled by executor setup) 

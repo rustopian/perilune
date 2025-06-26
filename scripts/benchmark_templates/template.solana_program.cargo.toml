@@ -1,0 +1,38 @@
+# Temporary workspace for a single SOLANA benchmark run.
+[workspace]
+# The benchmarked crate will be copied here and listed as a member.
+members = [ "%%BENCHED_CRATE_COPY_DIR_NAME%%" ]
+
+# Defines workspace dependencies (solana-program, etc.) needed by runner and/or benched crate.
+%%WORKSPACE_DEPENDENCIES_BLOCK%%
+
+# Solana benchmark runner package.
+[package]
+name = "perilune-bench-%%BENCH_ID%%"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib"] # Compile as a dynamic system library for SBF
+
+[dependencies]
+# Depend on the benchmarked crate (copied into temp dir).
+# Enable features specified in config (e.g., ["std"]) via %%CRATE_FEATURES%%.
+%%CRATE_NAME%% = { path = "./%%BENCHED_CRATE_COPY_DIR_NAME%%", default-features = false, features = [%%CRATE_FEATURES%%] }
+
+# Depend on Solana SDKs needed by this runner's code.
+%%ENTRYPOINT_SDK_DEPENDENCY_LINE%% 
+
+# Replace env_logger with a no-std stub defined in this temp workspace
+[patch.crates-io]
+env_logger = { path = "./noop_env_logger" }
+
+# (logging dependencies removed to avoid pulling in atty/termcolor)
+
+[profile.release]
+panic = "abort"
+lto = "thin"
+codegen-units = 1
+strip = true
+opt-level = 3 

@@ -1,0 +1,19 @@
+[workspace]
+[package]
+name = "slot-hashes-crate"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+# Specify lib target explicitly for clarity if needed, though Cargo usually infers it
+[lib]
+crate-type = ["cdylib", "lib"] # Keep existing types
+
+[features]
+default = []                      # on-chain build has no extra features
+std = []                          # enables alloc & host conveniences
+no_std = []                       # explicit marker for Pinocchio CU benches
+host = ["std", "pinocchio/std"]   # host-side tests/benches (std, Vec, println!)
+
+[dependencies]
+pinocchio = { version = "0.8", git = "https://github.com/rustopian/pinocchio.git", branch = "rustopian/slot-hashes-sysvar" }

@@ -1,0 +1,15 @@
+[workspace]
+[package]
+name = "ping-crate"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+# Specify lib target explicitly for clarity if needed, though Cargo usually infers it
+[lib]
+crate-type = ["cdylib", "lib"] # Keep existing types
+
+[dependencies]
+solana-account-info = { version = "2.2.1", default-features = false }
+solana-entrypoint = { package = "solana-program-entrypoint", version = "2.2.1", default-features = false }
+solana-pubkey = { version = "2.2.0", default-features = false }

@@ -1,0 +1,63 @@
+# perilune_benchmarks.toml for account-read-crate
+
+[[benchmark]]
+id = "account_read_multiple"
+
+# Path to the function within the account-read-crate to be benchmarked
+function = "account_read_crate::processor::process_account_reads"
+
+# List of entry points to test against
+entrypoints = ["solana-program", "solana-program-mono", "pinocchio", "pinocchio-std"]
+
+# Feature sets to test for each entrypoint
+# The benchmark script will pass these features when compiling account-read-crate
+# as a dependency of the temporary benchmark runner.
+features = [
+    { entrypoint = "solana-program", features = ["solana-program"] },  # Use individual solana crates without std
+    { entrypoint = "solana-program-mono", features = ["solana-program-mono"] },  # Use monolithic solana-program crate
+    { entrypoint = "pinocchio", features = ["no_std"] }, # Enable the explicit no_std feature
+    { entrypoint = "pinocchio-std", features = ["std", "host"] } # Enable std features with pinocchio imports
+]
+
+# Defines different account setups to run the benchmark against.
+# For each setup, 'count' specifies the number of accounts to be read by the program
+# (passed as the first byte of instruction_data) and also the number of accounts
+# the executor should prepare and provide to the program.
+account_setups = [
+    { count = 1 },
+    { count = 2 },
+    { count = 4 },
+    { count = 8 },
+    { count = 16 },
+    { count = 32 },
+    { count = 64 },
+]
+
+# instruction_data (e.g., specifying how many accounts to read) will be provided
+# by the perilune-bench-executor. This TOML configures the build, and the executor
+# can be invoked multiple times with different instruction data for the same build.
+
+[[benchmark]]
+id = "account_read_multiple_solana_nostd"
+
+# Path to the function within the account-read-crate to be benchmarked
+function = "account_read_crate::processor::process_account_reads"
+
+# List of entry points to test against
+entrypoints = ["solana-nostd-entrypoint"]
+
+# Feature sets to test for each entrypoint
+features = [
+    { entrypoint = "solana-nostd-entrypoint", features = ["solana-nostd-entrypoint"] }
+]
+
+# Defines different account setups to run the benchmark against.
+account_setups = [
+    { count = 1 },
+    { count = 2 },
+    { count = 4 },
+    { count = 8 },
+    { count = 16 },
+    { count = 32 },
+    { count = 64 },
+] 

@@ -1,0 +1,311 @@
+# perilune_benchmarks.toml for slot-hashes-crate
+
+[[benchmark]]
+id = "slot_hashes_from_account_info"
+function = "slot_hashes_crate::instruction::process_instruction"
+entrypoints = ["pinocchio", "pinocchio-std", "solana-program", "solana-program-mono"]
+features = [
+    { entrypoint = "pinocchio", features = ["no_std"] },
+    { entrypoint = "pinocchio-std", features = ["std", "host"] },
+    { entrypoint = "solana-program", features = ["solana-program"] },
+    { entrypoint = "solana-program-mono", features = ["solana-program-mono"] }
+]
+instruction_payload = { tag = 0 }
+
+[[benchmark]]
+id = "slot_hashes_get_entry_early"
+function = "slot_hashes_crate::instruction::process_instruction"
+entrypoints = ["pinocchio", "pinocchio-std", "solana-program", "solana-program-mono"]
+features = [
+    { entrypoint = "pinocchio", features = ["no_std"] },
+    { entrypoint = "pinocchio-std", features = ["std", "host"] },
+    { entrypoint = "solana-program", features = ["solana-program"] },
+    { entrypoint = "solana-program-mono", features = ["solana-program-mono"] }
+]
+instruction_payload = { tag = 1 }
+
+[[benchmark]]
+id = "slot_hashes_get_entry_middle"
+function = "slot_hashes_crate::instruction::process_instruction"
+entrypoints = ["pinocchio", "pinocchio-std", "solana-program", "solana-program-mono"]
+features = [
+    { entrypoint = "pinocchio", features = ["no_std"] },
+    { entrypoint = "pinocchio-std", features = ["std", "host"] },
+    { entrypoint = "solana-program", features = ["solana-program"] },
+    { entrypoint = "solana-program-mono", features = ["solana-program-mono"] }
+]
+instruction_payload = { tag = 2 }
+
+[[benchmark]]
+id = "slot_hashes_get_entry_late"
+function = "slot_hashes_crate::instruction::process_instruction"
+entrypoints = ["pinocchio", "pinocchio-std", "solana-program", "solana-program-mono"]
+features = [
+    { entrypoint = "pinocchio", features = ["no_std"] },
+    { entrypoint = "pinocchio-std", features = ["std", "host"] },
+    { entrypoint = "solana-program", features = ["solana-program"] },
+    { entrypoint = "solana-program-mono", features = ["solana-program-mono"] }
+]
+instruction_payload = { tag = 3 }
+
+[[benchmark]]
+id = "slot_hashes_get_entry_missing"
+function = "slot_hashes_crate::instruction::process_instruction"
+entrypoints = ["pinocchio", "pinocchio-std", "solana-program", "solana-program-mono"]
+features = [
+    { entrypoint = "pinocchio", features = ["no_std"] },
+    { entrypoint = "pinocchio-std", features = ["std", "host"] },
+    { entrypoint = "solana-program", features = ["solana-program"] },
+    { entrypoint = "solana-program-mono", features = ["solana-program-mono"] }
+]
+instruction_payload = { tag = 4 }
+
+[[benchmark]]
+id = "slot_hashes_get_entry_early_unchecked"
+function = "slot_hashes_crate::instruction::process_instruction"
+entrypoints = ["pinocchio", "pinocchio-std", "solana-program", "solana-program-mono"]
+features = [
+    { entrypoint = "pinocchio", features = ["no_std"] },
+    { entrypoint = "pinocchio-std", features = ["std", "host"] },
+    { entrypoint = "solana-program", features = ["solana-program"] },
+    { entrypoint = "solana-program-mono", features = ["solana-program-mono"] }
+]
+instruction_payload = { tag = 5 }
+
+[[benchmark]]
+id = "slot_hashes_get_entry_middle_unchecked"
+function = "slot_hashes_crate::instruction::process_instruction"
+entrypoints = ["pinocchio", "pinocchio-std", "solana-program", "solana-program-mono"]
+features = [
+    { entrypoint = "pinocchio", features = ["no_std"] },
+    { entrypoint = "pinocchio-std", features = ["std", "host"] },
+    { entrypoint = "solana-program", features = ["solana-program"] },
+    { entrypoint = "solana-program-mono", features = ["solana-program-mono"] }
+]
+instruction_payload = { tag = 6 }
+
+[[benchmark]]
+id = "slot_hashes_get_entry_late_unchecked"
+function = "slot_hashes_crate::instruction::process_instruction"
+entrypoints = ["pinocchio", "pinocchio-std", "solana-program", "solana-program-mono"]
+features = [
+    { entrypoint = "pinocchio", features = ["no_std"] },
+    { entrypoint = "pinocchio-std", features = ["std", "host"] },
+    { entrypoint = "solana-program", features = ["solana-program"] },
+    { entrypoint = "solana-program-mono", features = ["solana-program-mono"] }
+]
+instruction_payload = { tag = 7 }
+
+[[benchmark]]
+id = "slot_hashes_iterator"
+function = "slot_hashes_crate::instruction::process_instruction"
+entrypoints = ["pinocchio", "pinocchio-std", "solana-program", "solana-program-mono"]
+features = [
+    { entrypoint = "pinocchio", features = ["no_std"] },
+    { entrypoint = "pinocchio-std", features = ["std", "host"] },
+    { entrypoint = "solana-program", features = ["solana-program"] },
+    { entrypoint = "solana-program-mono", features = ["solana-program-mono"] }
+]
+instruction_payload = { tag = 8 }
+
+[[benchmark]]
+id = "slot_hashes_entries_slice"
+function = "slot_hashes_crate::instruction::process_instruction"
+entrypoints = ["pinocchio", "pinocchio-std", "solana-program", "solana-program-mono"]
+features = [
+    { entrypoint = "pinocchio", features = ["no_std"] },
+    { entrypoint = "pinocchio-std", features = ["std", "host"] },
+    { entrypoint = "solana-program", features = ["solana-program"] },
+    { entrypoint = "solana-program-mono", features = ["solana-program-mono"] }
+]
+instruction_payload = { tag = 9 }
+
+[[benchmark]]
+id = "slot_hashes_get_hash"
+function = "slot_hashes_crate::instruction::process_instruction"
+entrypoints = ["pinocchio", "pinocchio-std", "solana-program", "solana-program-mono"]
+features = [
+    { entrypoint = "pinocchio", features = ["no_std"] },
+    { entrypoint = "pinocchio-std", features = ["std", "host"] },
+    { entrypoint = "solana-program", features = ["solana-program"] },
+    { entrypoint = "solana-program-mono", features = ["solana-program-mono"] }
+]
+instruction_payload = { tag = 10 }
+
+[[benchmark]]
+id = "slot_hashes_position"
+function = "slot_hashes_crate::instruction::process_instruction"
+entrypoints = ["pinocchio", "pinocchio-std", "solana-program", "solana-program-mono"]
+features = [
+    { entrypoint = "pinocchio", features = ["no_std"] },
+    { entrypoint = "pinocchio-std", features = ["std", "host"] },
+    { entrypoint = "solana-program", features = ["solana-program"] },
+    { entrypoint = "solana-program-mono", features = ["solana-program-mono"] }
+]
+instruction_payload = { tag = 11 }
+
+# NEW: solana-nostd-entrypoint benchmarks
+
+[[benchmark]]
+id = "slot_hashes_from_account_info_solana_nostd"
+function = "slot_hashes_crate::instruction::process_instruction"
+entrypoints = ["solana-nostd-entrypoint"]
+features = [
+    { entrypoint = "solana-nostd-entrypoint", features = ["solana-nostd-mono"] }
+]
+instruction_payload = { tag = 0 }
+
+[[benchmark]]
+id = "slot_hashes_get_entry_early_solana_nostd"
+function = "slot_hashes_crate::instruction::process_instruction"
+entrypoints = ["solana-nostd-entrypoint"]
+features = [
+    { entrypoint = "solana-nostd-entrypoint", features = ["solana-nostd-mono"] }
+]
+instruction_payload = { tag = 1 }
+
+[[benchmark]]
+id = "slot_hashes_get_entry_middle_solana_nostd"
+function = "slot_hashes_crate::instruction::process_instruction"
+entrypoints = ["solana-nostd-entrypoint"]
+features = [
+    { entrypoint = "solana-nostd-entrypoint", features = ["solana-nostd-mono"] }
+]
+instruction_payload = { tag = 2 }
+
+[[benchmark]]
+id = "slot_hashes_get_entry_late_solana_nostd"
+function = "slot_hashes_crate::instruction::process_instruction"
+entrypoints = ["solana-nostd-entrypoint"]
+features = [
+    { entrypoint = "solana-nostd-entrypoint", features = ["solana-nostd-mono"] }
+]
+instruction_payload = { tag = 3 }
+
+[[benchmark]]
+id = "slot_hashes_get_entry_missing_solana_nostd"
+function = "slot_hashes_crate::instruction::process_instruction"
+entrypoints = ["solana-nostd-entrypoint"]
+features = [
+    { entrypoint = "solana-nostd-entrypoint", features = ["solana-nostd-mono"] }
+]
+instruction_payload = { tag = 4 }
+
+[[benchmark]]
+id = "slot_hashes_get_entry_early_unchecked_solana_nostd"
+function = "slot_hashes_crate::instruction::process_instruction"
+entrypoints = ["solana-nostd-entrypoint"]
+features = [
+    { entrypoint = "solana-nostd-entrypoint", features = ["solana-nostd-mono"] }
+]
+instruction_payload = { tag = 5 }
+
+[[benchmark]]
+id = "slot_hashes_get_entry_middle_unchecked_solana_nostd"
+function = "slot_hashes_crate::instruction::process_instruction"
+entrypoints = ["solana-nostd-entrypoint"]
+features = [
+    { entrypoint = "solana-nostd-entrypoint", features = ["solana-nostd-mono"] }
+]
+instruction_payload = { tag = 6 }
+
+[[benchmark]]
+id = "slot_hashes_get_entry_late_unchecked_solana_nostd"
+function = "slot_hashes_crate::instruction::process_instruction"
+entrypoints = ["solana-nostd-entrypoint"]
+features = [
+    { entrypoint = "solana-nostd-entrypoint", features = ["solana-nostd-mono"] }
+]
+instruction_payload = { tag = 7 }
+
+[[benchmark]]
+id = "slot_hashes_iterator_solana_nostd"
+function = "slot_hashes_crate::instruction::process_instruction"
+entrypoints = ["solana-nostd-entrypoint"]
+features = [
+    { entrypoint = "solana-nostd-entrypoint", features = ["solana-nostd-mono"] }
+]
+instruction_payload = { tag = 8 }
+
+[[benchmark]]
+id = "slot_hashes_entries_slice_solana_nostd"
+function = "slot_hashes_crate::instruction::process_instruction"
+entrypoints = ["solana-nostd-entrypoint"]
+features = [
+    { entrypoint = "solana-nostd-entrypoint", features = ["solana-nostd-mono"] }
+]
+instruction_payload = { tag = 9 }
+
+[[benchmark]]
+id = "slot_hashes_get_hash_solana_nostd"
+function = "slot_hashes_crate::instruction::process_instruction"
+entrypoints = ["solana-nostd-entrypoint"]
+features = [
+    { entrypoint = "solana-nostd-entrypoint", features = ["solana-nostd-mono"] }
+]
+instruction_payload = { tag = 10 }
+
+[[benchmark]]
+id = "slot_hashes_position_solana_nostd"
+function = "slot_hashes_crate::instruction::process_instruction"
+entrypoints = ["solana-nostd-entrypoint"]
+features = [
+    { entrypoint = "solana-nostd-entrypoint", features = ["solana-nostd-mono"] }
+]
+instruction_payload = { tag = 11 }
+
+[[benchmark]]
+id = "slot_hashes_fetch_std"
+function = "slot_hashes_crate::instruction::process_instruction"
+entrypoints = ["solana-program", "solana-program-mono"]
+features = [
+    { entrypoint = "solana-program", features = ["solana-program"] },
+    { entrypoint = "solana-program-mono", features = ["solana-program-mono"] }
+]
+instruction_payload = { tag = 12 }
+
+[[benchmark]]
+id = "slot_hashes_fetch_into"
+function = "slot_hashes_crate::instruction::process_instruction"
+entrypoints = ["solana-program", "solana-program-mono"]
+features = [
+    { entrypoint = "solana-program", features = ["solana-program"] },
+    { entrypoint = "solana-program-mono", features = ["solana-program-mono"] }
+]
+instruction_payload = { tag = 13 }
+
+[[benchmark]]
+id = "slot_hashes_fetch_into_unchecked"
+function = "slot_hashes_crate::instruction::process_instruction"
+entrypoints = ["solana-program", "solana-program-mono"]
+features = [
+    { entrypoint = "solana-program", features = ["solana-program"] },
+    { entrypoint = "solana-program-mono", features = ["solana-program-mono"] }
+]
+instruction_payload = { tag = 14 }
+
+[[benchmark]]
+id = "slot_hashes_entries_slice_repeat"
+function = "slot_hashes_crate::instruction::process_instruction"
+entrypoints = ["pinocchio", "pinocchio-std", "solana-program", "solana-program-mono", "solana-nostd-entrypoint"]
+features = [
+    { entrypoint = "pinocchio", features = ["no_std"] },
+    { entrypoint = "pinocchio-std", features = ["std", "host"] },
+    { entrypoint = "solana-program", features = ["solana-program"] },
+    { entrypoint = "solana-program-mono", features = ["solana-program-mono"] },
+    { entrypoint = "solana-nostd-entrypoint", features = ["solana-nostd-mono"] }
+]
+instruction_payload = { tag = 15 }
+
+[[benchmark]]
+id = "slot_hashes_entries_slice_blackbox"
+function = "slot_hashes_crate::instruction::process_instruction"
+entrypoints = ["pinocchio", "pinocchio-std", "solana-program", "solana-program-mono", "solana-nostd-entrypoint"]
+features = [
+    { entrypoint = "pinocchio", features = ["no_std"] },
+    { entrypoint = "pinocchio-std", features = ["std", "host"] },
+    { entrypoint = "solana-program", features = ["solana-program"] },
+    { entrypoint = "solana-program-mono", features = ["solana-program-mono"] },
+    { entrypoint = "solana-nostd-entrypoint", features = ["solana-nostd-mono"] }
+]
+instruction_payload = { tag = 16 } 

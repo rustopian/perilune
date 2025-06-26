@@ -1,0 +1,15 @@
+[workspace]
+[package]
+name = "account-read-crate"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "lib"] # "lib" allows it to be used as a dependency by the benchmark runner
+
+[dependencies]
+solana-account-info = { version = "2.2.1", default-features = false }
+solana-entrypoint = { package = "solana-program-entrypoint", version = "2.2.1", default-features = false }
+solana-program-error = { version = "2.2.2", default-features = false }
+solana-pubkey = { version = "2.2.0", default-features = false }
