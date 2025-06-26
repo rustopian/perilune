@@ -13,7 +13,7 @@ import textwrap
 import re
 import orchestrator
 
-# Import extracted helper modules (refactor)
+
 from console_utils import (
     print_section,
     print_subsection,
@@ -26,7 +26,7 @@ from console_utils import (
 from builder import run_cargo_build
 from rewriter import rewrite_sources_for_entrypoint
 from entrypoint_config import ENTRYPOINT_DEPS
-# NEW imports from helper module
+
 from helpers import (
     discover_crates,
     parse_function_path,
@@ -45,7 +45,7 @@ TEMPLATES_DIR = PERILUNE_ROOT / "scripts" / "benchmark_templates"
 TARGET_DIR = PERILUNE_ROOT / "target" / "bench_gen"
 BENCHED_CRATE_COPY_DIR_NAME = "benched_crate_src" # Dir name for the copied source
 
-# Placeholder line to find and replace in the template Cargo.toml
+
 PINOCCHIO_PLACEHOLDER_LINE = "pinocchio = { workspace = true }"
 
 

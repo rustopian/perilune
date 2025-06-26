@@ -202,7 +202,7 @@ def _ensure_manifest_deps_for_entrypoint(entrypoint_name: str, crate_root: pathl
             print_warning(f"Failed to update manifest {manifest_path}: {exc}")
 
 
-# Import processing functions moved to import_processor.py
+
 
 
 def _replace_qualified_usage_patterns(content: str, entrypoint_name: str) -> str:
@@ -261,7 +261,7 @@ def _replace_qualified_usage_patterns(content: str, entrypoint_name: str) -> str
     return content
 
 
-# Function moved to import_processor.py
+
 
 
 def _replace_imports_with_target_imports(content: str, entrypoint_name: str) -> str:

@@ -20,10 +20,7 @@ __all__ = [
 ]
 
 
-# NOTE: This is nearly a verbatim extraction of the logic that used to live in
-#       run_perilune_benchmarks.py. Minor clean-ups/additional typing were added
-#       but the core behaviour is unchanged so that the refactor remains
-#       risk-free.
+
 
 def run_cargo_build(temp_project_dir: pathlib.Path) -> Tuple[
     Optional[pathlib.Path], Optional[str], Optional[float], Optional[int]

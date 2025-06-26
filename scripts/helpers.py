@@ -125,7 +125,6 @@ def get_workspace_dependencies_block(dep_names):
 
         return "[workspace.dependencies]\n" + _format_toml_dict(deps_to_include)
     except FileNotFoundError:
-        # Root workspace manifest not found (e.g. the old Perilune workspace was deleted).
         # Fall back to a minimal dependency block so the temporary benchmark workspace still builds.
         print_warning(f"Workspace root Cargo.toml not found at {root_cargo_path}; using fallback dependency definitions.")
 

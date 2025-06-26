@@ -20,9 +20,6 @@ from account_specs import (
 )
 from metrics_parser import extract_and_store_metrics
 
-# NOTE: This is extracted wholesale from run_perilune_benchmarks.py so that the
-#       main script is shorter. Only minimal tweaks were made (type hints, minor
-#       refactoring) to keep behaviour identical.
 
 __all__ = ["perform_benchmark_runs"]
 

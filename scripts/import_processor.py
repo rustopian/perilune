@@ -184,7 +184,7 @@ def _format_import_statements(target_imports: dict, entrypoint_name: str) -> str
         # Special handling for solana-nostd-entrypoint double alias issue
         if entrypoint_name == "solana-nostd-entrypoint" and crate == "solana_nostd_entrypoint" and type_name == "NoStdAccountInfo":
             if identifier == "AccountInfo":
-                # Just import as AccountInfo (the alias will be added by _ensure_nostd_entrypoint_alias)
+
                 crate_imports[crate].append("NoStdAccountInfo")
             elif identifier == "CpiAccount":
                 # Import as CpiAccount directly
@@ -311,18 +311,16 @@ def _scan_for_implicit_identifiers(content: str, entrypoint_name: str) -> set:
         found_identifiers.discard("no_allocator")
         found_identifiers.discard("nostd_panic_handler")
         
-        # Add identifiers that will be created by transformations
         if "CpiAccount" in content:
-            found_identifiers.add("Account")  # CpiAccount gets transformed to Account
+            found_identifiers.add("Account")
         if "invoke_signed_unchecked" in content:
-            found_identifiers.add("invoke_signed")  # invoke_signed_unchecked gets transformed to invoke_signed
+            found_identifiers.add("invoke_signed")
     
-    # Add identifiers for nostd entrypoint transformations
     if entrypoint_name == "solana-nostd-entrypoint":
         if "invoke_signed_unchecked" in content:
-            found_identifiers.add("invoke_signed")  # invoke_signed_unchecked gets transformed to invoke_signed
+            found_identifiers.add("invoke_signed")
 
-    # Detect SlotHashes usages which often appear without an explicit import after rewrites.
+
     if re.search(r"\bSlotHashes\b", content):
         found_identifiers.add("SlotHashes")
 
