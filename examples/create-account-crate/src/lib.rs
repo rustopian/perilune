@@ -1,29 +1,129 @@
-use solana_program::{
-    entrypoint::ProgramResult,
-    pubkey::Pubkey,
+#![cfg_attr(not(feature = "host"), no_std)]
+
+// -----------------------------------------------------------------------------
+// no_std setup (allocator & panic handler stubs)
+// -----------------------------------------------------------------------------
+#[cfg(not(feature = "host"))]
+use pinocchio::{no_allocator, nostd_panic_handler};
+
+#[cfg(not(feature = "host"))]
+no_allocator!();
+#[cfg(not(feature = "host"))]
+nostd_panic_handler!();
+
+// -----------------------------------------------------------------------------
+// Common imports & constants
+// -----------------------------------------------------------------------------
+use pinocchio::{
     account_info::AccountInfo,
+    cpi::invoke,
     instruction::{AccountMeta, Instruction},
-    account_info::Account as CpiAccount,
-    program::invoke_signed,
     program_error::ProgramError,
+    pubkey::Pubkey,
+    ProgramResult,
 };
 
+/// System program id – the BPF loader substitutes all-zero bytes for the well-known
+/// `11111111111111111111111111111111` base-58 address. Using a zeroed array keeps
+/// the constant valid for on-chain (`target_os = "solana"`) and off-chain builds.
+pub const PINOCCHIO_SYSTEM_PROGRAM_ID: Pubkey = [0u8; 32];
+
+// Instruction layout offsets (see README for details)
 const CREATE_ACCOUNT_INSTRUCTION_TAG: u8 = 0;
 const LAMPORTS_OFFSET: usize = 1;
 const SPACE_OFFSET: usize = 9;
 const REQUIRED_INSTRUCTION_DATA_LEN: usize = 17;
 
-#[cfg(all(feature = "std"))]
-pub mod create_account_benches {
-    use {
-        solana_account_info::{AccountInfo, next_account_info},
-        solana_program_error::{ProgramResult, ProgramError},
-        solana_cpi::invoke,
-        solana_pubkey::Pubkey,
-        solana_system_interface::{instruction, program},
-    };
-    use super::{CREATE_ACCOUNT_INSTRUCTION_TAG, LAMPORTS_OFFSET, SPACE_OFFSET, REQUIRED_INSTRUCTION_DATA_LEN};
+// -----------------------------------------------------------------------------
+// Std (host) benchmarks – used by `pinocchio-std` entrypoint
+// -----------------------------------------------------------------------------
+#[cfg(feature = "std")]
+pub mod std_benches {
+    use super::*;
 
+    /// Bench implementation for a `system_instruction::create_account` CPI.
+    ///
+    /// * `program_id` – id of the program being benchmarked (passed through to the CPI data).
+    /// * `accounts` – `[funder, new_account, system_program, ..]`.
+    /// * `instruction_data` layout:
+    ///   byte 0   – discriminator (must be 0 for this bench)
+    ///   bytes 1-8  – lamports (u64 LE)
+    ///   bytes 9-16 – space    (u64 LE)
+    pub fn run_create_account_bench(
+        program_id: &Pubkey,
+        accounts: &[AccountInfo],
+        instruction_data: &[u8],
+    ) -> ProgramResult {
+        // ----------------------------
+        // Validate instruction data
+        // ----------------------------
+        if instruction_data.is_empty() || instruction_data[0] != CREATE_ACCOUNT_INSTRUCTION_TAG {
+            return Err(ProgramError::InvalidInstructionData);
+        }
+        if instruction_data.len() < REQUIRED_INSTRUCTION_DATA_LEN {
+            return Err(ProgramError::InvalidInstructionData);
+        }
+
+        let lamports = u64::from_le_bytes(
+            instruction_data[LAMPORTS_OFFSET..SPACE_OFFSET]
+                .try_into()
+                .unwrap(),
+        );
+        let space = u64::from_le_bytes(
+            instruction_data[SPACE_OFFSET..REQUIRED_INSTRUCTION_DATA_LEN]
+                .try_into()
+                .unwrap(),
+        );
+
+        // ----------------------------
+        // Destructure & validate accounts
+        // ----------------------------
+        let [funder, new_account, system_program] = match accounts {
+            [f, n, s, ..] => [f, n, s],
+            _ => return Err(ProgramError::NotEnoughAccountKeys),
+        };
+
+        // Ensure the supplied system program account is correct
+        if system_program.key() != &PINOCCHIO_SYSTEM_PROGRAM_ID {
+            return Err(ProgramError::IncorrectProgramId);
+        }
+
+        // ----------------------------
+        // Build raw `create_account` instruction
+        // ----------------------------
+        let mut data = [0u8; 52];
+        data[0..4].copy_from_slice(&0u32.to_le_bytes()); // discriminator for `create_account`
+        data[4..12].copy_from_slice(&lamports.to_le_bytes());
+        data[12..20].copy_from_slice(&space.to_le_bytes());
+        data[20..52].copy_from_slice(program_id);
+
+        let metas = [
+            AccountMeta::new(funder.key(), /*is_writable=*/ true, /*is_signer=*/ true),
+            AccountMeta::new(new_account.key(), true, true),
+        ];
+
+        let ix = Instruction {
+            program_id: &PINOCCHIO_SYSTEM_PROGRAM_ID,
+            accounts: &metas,
+            data: &data,
+        };
+
+        // ----------------------------
+        // Invoke system program
+        // ----------------------------
+        invoke(&ix, &[funder, new_account, system_program])
+    }
+}
+
+// -----------------------------------------------------------------------------
+// no_std benchmarks – used by pure Pinocchio / solana-nostd entrypoints
+// -----------------------------------------------------------------------------
+#[cfg(feature = "no_std")]
+pub mod nostd_benches {
+    use super::*;
+    use pinocchio::cpi::invoke_signed_unchecked;
+
+    /// Same logic as `std_benches`, but minimises dependencies and avoids heap usage.
     pub fn run_create_account_bench(
         program_id: &Pubkey,
         accounts: &[AccountInfo],
@@ -36,106 +136,54 @@ pub mod create_account_benches {
             return Err(ProgramError::InvalidInstructionData);
         }
 
-        let lamports = u64::from_le_bytes(instruction_data[LAMPORTS_OFFSET..SPACE_OFFSET].try_into().unwrap());
-        let space = u64::from_le_bytes(instruction_data[SPACE_OFFSET..REQUIRED_INSTRUCTION_DATA_LEN].try_into().unwrap());
+        let lamports = u64::from_le_bytes(
+            instruction_data[LAMPORTS_OFFSET..SPACE_OFFSET]
+                .try_into()
+                .unwrap(),
+        );
+        let space = u64::from_le_bytes(
+            instruction_data[SPACE_OFFSET..REQUIRED_INSTRUCTION_DATA_LEN]
+                .try_into()
+                .unwrap(),
+        );
 
-        let account_iter = &mut accounts.iter();
-        let funder_account = next_account_info(account_iter)?;
-        let new_account = next_account_info(account_iter)?;
-        let system_program_account = next_account_info(account_iter)?;
-        
-        if system_program_account.key != &program::ID {
-            // Optional: Add a specific error if system program ID is not as expected
-            // return Err(ProgramError::IncorrectProgramId);
-        }
-
-        invoke(
-            &instruction::create_account(
-                funder_account.key,
-                new_account.key,
-                lamports,
-                space,
-                program_id,
-            ),
-            &[
-                funder_account.clone(),
-                new_account.clone(),
-                system_program_account.clone(),
-            ],
-        )
-    }
-}
-
-#[cfg(all(feature = "no_std"))]
-pub mod create_account_benches {
-    use {
-        solana_program_error::{ProgramResult, ProgramError},
-        solana_pubkey::Pubkey,
-        solana_nostd_entrypoint::{NoStdAccountInfo as AccountInfo, InstructionC},
-        solana_cpi::syscalls,
-        SystemPubkey,
-    };
-    use super::{CREATE_ACCOUNT_INSTRUCTION_TAG, LAMPORTS_OFFSET, SPACE_OFFSET, REQUIRED_INSTRUCTION_DATA_LEN};
-
-    // Use the correct Pubkey type for InstructionC (system program is all zeros)
-    const SYSTEM_PROGRAM_ID: SystemPubkey = SystemPubkey::new_from_array([0u8; 32]);
-
-    pub fn run_create_account_bench(
-        program_id: &Pubkey, 
-        accounts: &[AccountInfo],
-        instruction_data: &[u8],
-    ) -> ProgramResult {
-        if instruction_data.is_empty() || instruction_data[0] != CREATE_ACCOUNT_INSTRUCTION_TAG {
-            return Err(ProgramError::InvalidInstructionData);
-        }
-        if instruction_data.len() < REQUIRED_INSTRUCTION_DATA_LEN {
-            return Err(ProgramError::InvalidInstructionData);
-        }
-
-        let lamports = u64::from_le_bytes(instruction_data[LAMPORTS_OFFSET..SPACE_OFFSET].try_into().unwrap());
-        let space = u64::from_le_bytes(instruction_data[SPACE_OFFSET..REQUIRED_INSTRUCTION_DATA_LEN].try_into().unwrap());
-
-        // Use array destructuring instead of next_account_info
-        let [funder_account, new_account, _system_program] = match accounts {
-            [funder, new, system, ..] => [funder, new, system],
+        let [funder, new_account, _system_program] = match accounts {
+            [f, n, s, ..] => [f, n, s],
             _ => return Err(ProgramError::NotEnoughAccountKeys),
         };
 
-        // Build instruction data for system program create_account
-        let mut system_instruction_data = [0u8; 52];
-        system_instruction_data[0..4].copy_from_slice(&0u32.to_le_bytes()); // CreateAccount discriminator
-        system_instruction_data[4..12].copy_from_slice(&lamports.to_le_bytes());
-        system_instruction_data[12..20].copy_from_slice(&space.to_le_bytes());
-        system_instruction_data[20..52].copy_from_slice(program_id.as_ref());
+        let mut data = [0u8; 52];
+        data[0..4].copy_from_slice(&0u32.to_le_bytes());
+        data[4..12].copy_from_slice(&lamports.to_le_bytes());
+        data[12..20].copy_from_slice(&space.to_le_bytes());
+        data[20..52].copy_from_slice(program_id);
 
-        // Prepare accounts for CPI
-        let instruction_accounts = [
-            funder_account.to_meta_c(),
-            new_account.to_meta_c(),
+        let metas = [
+            AccountMeta::new(funder.key(), true, true),
+            AccountMeta::new(new_account.key(), true, true),
         ];
 
-        let instruction = InstructionC {
-            program_id: &SYSTEM_PROGRAM_ID,
-            accounts: instruction_accounts.as_ptr(),
-            accounts_len: instruction_accounts.len() as u64,
-            data: system_instruction_data.as_ptr(),
-            data_len: system_instruction_data.len() as u64,
+        let ix = Instruction {
+            program_id: &PINOCCHIO_SYSTEM_PROGRAM_ID,
+            accounts: &metas,
+            data: &data,
         };
 
-        let infos = [funder_account.to_info_c(), new_account.to_info_c()];
-
-        // Use direct syscall for CPI
-        #[cfg(target_os = "solana")]
         unsafe {
-            syscalls::sol_invoke_signed_c(
-                &instruction as *const InstructionC as *const u8,
-                infos.as_ptr() as *const u8,
-                infos.len() as u64,
-                core::ptr::null(),
-                0,
-            );
+            // No borrow-checking validation to keep CU usage minimal.
+            use pinocchio::instruction::Account as CpiAccount;
+            let accounts_array: [CpiAccount; 2] = [CpiAccount::from(funder), CpiAccount::from(new_account)];
+            invoke_signed_unchecked(&ix, &accounts_array, &[]);
         }
-
         Ok(())
     }
-} 
+}
+
+// -----------------------------------------------------------------------------
+// Provide a unified alias so the benchmark harness can `use` the same symbol
+// -----------------------------------------------------------------------------
+#[cfg(feature = "std")]
+pub use std_benches as create_account_benches;
+
+#[cfg(all(feature = "no_std"))]
+pub use nostd_benches as create_account_benches; 

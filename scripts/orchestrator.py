@@ -306,8 +306,8 @@ name = "mollusk_bench"
 harness = false
 
 [dependencies]
-mollusk-svm = "0.1.5"
-mollusk-svm-bencher = "0.1.5"
+mollusk-svm = "0.3.0"
+mollusk-svm-bencher = "0.3.0"
 solana-account = "2.2"
 solana-instruction = "2.2"
 solana-pubkey = "2.2"
@@ -335,20 +335,22 @@ fn benchmark_ata_functions(c: &mut Criterion) {{
     
     c.bench_function("ata_create", |b| {{
         b.iter(|| {{
-            // Run the benchmark function
-            run_create_ata_bench().expect("ATA create benchmark failed");
+            // Run the REAL benchmark function with the actual compiled program
+            run_create_ata_bench_with_program(program_path, program_id).expect("ATA create benchmark failed");
         }})
     }});
     
     c.bench_function("ata_create_idempotent", |b| {{
         b.iter(|| {{
-            run_create_ata_idempotent_bench().expect("ATA create idempotent benchmark failed");
+            // Run the REAL benchmark function with the actual compiled program
+            run_create_ata_idempotent_bench_with_program(program_path, program_id).expect("ATA create idempotent benchmark failed");
         }})
     }});
     
     c.bench_function("ata_recover_nested", |b| {{
         b.iter(|| {{
-            run_recover_nested_ata_bench().expect("ATA recover nested benchmark failed");
+            // Run the REAL benchmark function with the actual compiled program
+            run_recover_nested_ata_bench_with_program(program_path, program_id).expect("ATA recover nested benchmark failed");
         }})
     }});
 }}
@@ -412,8 +414,8 @@ def _process_full_program_benchmark(
         print_success(f"Built program artifact: {program_artifact}")
         built_artifacts.append(program_artifact)
         
-        # Get features for the test crate (always std for Mollusk tests)
-        test_crate_feats = ["std"]
+        # Get features for the test crate (use test-bpf for real Mollusk benchmarks)
+        test_crate_feats = ["test-bpf"]
         
         # Create and run Mollusk SVM benchmark for this entrypoint
         try:

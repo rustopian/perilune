@@ -190,7 +190,11 @@ BENCHED_CRATE_DEPS = {
             "branch": "rustopian/slot-hashes-sysvar",
             "default-features": False,
             "features": ["std"],
-        }
+        },
+        "solana-program": {
+            "version": "^2.2",
+            "default-features": False,
+        },
     },
 }
 
@@ -268,8 +272,8 @@ IDENTIFIER_MAPPINGS = {
         "msg": "solana_msg::msg",
         "next_account_info": "solana_account_info::next_account_info",
         "CpiAccount": "solana_account_info::AccountInfo",
-        "create_account": "solana_system_interface::instruction::create_account",
-        "ID": "solana_system_interface::program::ID",
+        "instruction": "solana_system_interface::instruction",
+        "program": "solana_system_interface::program",
         # SPL ATA functions - map to actual import paths
         "ata_program_id": "spl_associated_token_account::program::id",
         "ata_process_instruction": "spl_associated_token_account::processor::process_instruction",
@@ -285,8 +289,8 @@ IDENTIFIER_MAPPINGS = {
         "msg": "solana_program::msg",
         "next_account_info": "solana_program::account_info::next_account_info",
         "CpiAccount": "solana_program::account_info::AccountInfo",
-        "create_account": "solana_program::system_instruction::create_account",
-        "ID": "solana_program::system_program::ID",
+        "instruction": "solana_program::system_instruction",
+        "program": "solana_program::system_program",
         # SPL ATA functions - map to actual import paths  
         "ata_program_id": "spl_associated_token_account::program::id",
         "ata_process_instruction": "spl_associated_token_account::processor::process_instruction",
@@ -313,16 +317,25 @@ IDENTIFIER_MAPPINGS = {
         "invoke_signed_unchecked": "solana_cpi::invoke_signed",
     },
 
-    "pinocchio-std": _build_identifier_mapping("pinocchio", {
+    "pinocchio-std": {
+        "Pubkey": "pinocchio::pubkey::Pubkey",
+        "ProgramError": "pinocchio::program_error::ProgramError",
         "ProgramResult": "pinocchio::ProgramResult",
         "AccountInfo": "pinocchio::account_info::AccountInfo",
-        "Account": "pinocchio::instruction::Account",  # Override the common template
+        "AccountMeta": "pinocchio::instruction::AccountMeta", 
+        "Instruction": "pinocchio::instruction::Instruction",
+        "Account": "pinocchio::instruction::Account",
         "invoke": "pinocchio::cpi::invoke",
-        "invoke_signed": "pinocchio::cpi::invoke_signed", 
+        "invoke_signed": "pinocchio::cpi::invoke_signed",
         "sol_log": "pinocchio::log::sol_log",
         "msg": "pinocchio::msg",
+        "next_account_info": "solana_program::account_info::next_account_info",
         "CpiAccount": "pinocchio::instruction::Account",
         "invoke_signed_unchecked": "pinocchio::cpi::invoke_signed",
         "SlotHashes": "pinocchio::sysvars::slot_hashes::SlotHashes",
-    })
+        # Use solana-program for system instructions since pinocchio doesn't have high-level APIs
+        "create_account": "solana_program::system_instruction::create_account",
+        "ID": "solana_program::system_program::ID",
+        **_SPL_IDENTIFIERS,
+    }
 } 

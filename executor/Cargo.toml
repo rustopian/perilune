@@ -1,0 +1,19 @@
+[package]
+name = "perilune"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[[bin]]
+name = "perilune-bench-executor"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+mollusk-svm = "0.3.0"
+mollusk-svm-bencher = "0.3.0"
+solana-account = "2.2.1"
+solana-instruction = "2.2.1"
+solana-pubkey = "2.2.1"
+solana-system-program = "2.2.1"
+hex = "0.4" 

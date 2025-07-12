@@ -210,9 +210,8 @@ def _replace_qualified_usage_patterns(content: str, entrypoint_name: str) -> str
     import re
     
     if entrypoint_name in ("pinocchio", "pinocchio-std"):
-        # For pinocchio, replace qualified usage patterns
-        content = re.sub(r'\binstruction::create_account\b', 'pinocchio::sysvars::system_instruction::create_account', content)
-        content = re.sub(r'\bprogram::ID\b', 'pinocchio::sysvars::SYSTEM_PROGRAM_ID', content)
+        # For pinocchio, the source code now uses proper imports, so no qualified pattern replacements needed
+        pass
         
         # Fix remaining pinocchio qualified patterns that weren't handled in import stripping
         # Split content into lines and only apply replacements to non-import lines
@@ -538,6 +537,58 @@ class PinocchioRewriter(EntrypointRewriter):
             filtered_lines.append(line)
         content = '\n'.join(filtered_lines)
         
+        # Transform next_account_info pattern to array destructuring for pinocchio
+        content = self._transform_next_account_info_to_array_destructuring(content)
+        
+        # Fix solana-nostd-entrypoint APIs to pinocchio APIs
+        content = content.replace("SystemPubkey", "Pubkey")
+        content = content.replace("Pubkey::new_from_array([0u8; 32])", "Pubkey::new_from_array([0u8; 32])")
+        content = content.replace("InstructionC", "Instruction")
+        
+        # Fix method calls - pinocchio AccountInfo to AccountMeta conversion
+        content = re.sub(
+            r"(\w+)\.to_meta_c\(\)",
+            r"pinocchio::instruction::AccountMeta::new(\1.key(), true, true)",
+            content
+        )
+        
+        # Remove .to_info_c() calls completely from the infos array
+        content = re.sub(
+            r"let infos = \[([^,]+)\.to_info_c\(\), ([^,]+)\.to_info_c\(\)\];",
+            r"let infos = [\1, \2];",
+            content
+        )
+        
+        # Fix syscall usage
+        content = content.replace("syscalls::sol_invoke_signed_c", "pinocchio::syscalls::sol_invoke_signed")
+        
+        # Fix Instruction constructor for pinocchio
+        content = re.sub(
+            r"let instruction = Instruction \{\s*program_id: &([^,]+),\s*accounts: ([^,]+)\.as_ptr\(\),\s*accounts_len: [^,]+\.len\(\) as u64,\s*data: ([^,]+)\.as_ptr\(\),\s*data_len: [^,]+\.len\(\) as u64,\s*\};",
+            r"let instruction = Instruction {\n            program_id: &\1,\n            accounts: &\2,\n            data: &\3,\n        };",
+            content,
+            flags=re.MULTILINE | re.DOTALL
+        )
+        
+        # Fix the infos array - pinocchio expects slice of references, not array of values
+        content = re.sub(
+            r"let infos = \[([^,]+), ([^,]+)\];",
+            r"let infos = [\1, \2];",
+            content
+        )
+        
+        # Fix invoke call to use pinocchio's invoke_signed and remove unsafe block
+        content = re.sub(
+            r"#\[cfg\(target_os = \"solana\"\)\]\s*unsafe \{\s*pinocchio::syscalls::sol_invoke_signed\(\s*&instruction as \*const Instruction as \*const u8,\s*infos\.as_ptr\(\) as \*const u8,\s*infos\.len\(\) as u64,\s*core::ptr::null\(\),\s*0,\s*\);\s*\}",
+            r"pinocchio::cpi::invoke_signed(&instruction, &infos, &[])?;",
+            content,
+            flags=re.MULTILINE | re.DOTALL
+        )
+        
+        # Use the correct system program ID bytes (11111111111111111111111111111111 decodes to all zeros)
+        content = content.replace("const SYSTEM_PROGRAM_ID: Pubkey = Pubkey::new_from_array([0u8; 32]);", 
+                                 "static SYSTEM_PROGRAM_ID: [u8; 32] = [0; 32];")
+        
         # Fix pinocchio-specific issues
         # Replace PINOCCHIO_SYSTEM_PROGRAM_ID with the actual system program ID
         system_program_id = "Pubkey::from([0u8; 32])"  # System program ID is all zeros
@@ -559,72 +610,45 @@ class PinocchioRewriter(EntrypointRewriter):
         content = re.sub(r"unsafe\s*\{\s*invoke_signed_unchecked\(([^}]+)\);\s*\}", r"invoke_signed(\1);", content)
         
         return content
+    
+    def _transform_next_account_info_to_array_destructuring(self, content: str) -> str:
+        """Transform next_account_info pattern to array destructuring for pinocchio."""
+        import re
+        
+        # Pattern to match the next_account_info sequence
+        pattern = r"""
+            let\s+account_iter\s*=\s*&mut\s+accounts\.iter\(\);\s*\n
+            \s*let\s+(\w+)\s*=\s*next_account_info\(account_iter\)\?;\s*\n
+            \s*let\s+(\w+)\s*=\s*next_account_info\(account_iter\)\?;\s*\n
+            \s*let\s+(\w+)\s*=\s*next_account_info\(account_iter\)\?;
+        """
+        
+        # Replacement with array destructuring
+        def replacement_func(match):
+            var1, var2, var3 = match.groups()
+            return f"""let [{var1}, {var2}, {var3}] = match accounts {{
+            [{var1[0]}, {var2[0]}, {var3[0]}, ..] => [{var1[0]}, {var2[0]}, {var3[0]}],
+            _ => return Err(ProgramError::NotEnoughAccountKeys),
+        }};"""
+        
+        # Apply the transformation
+        content = re.sub(pattern, replacement_func, content, flags=re.VERBOSE | re.MULTILINE)
+        
+        return content
 
 class SolanaNoStdRewriter(EntrypointRewriter):
     def should_skip_normalization(self, content: str) -> bool:
         return False
     
     def apply_specific_fixes(self, content: str) -> str:
-        # Fix nostd-specific issues
-        content = re.sub(r"&?\s*PINOCCHIO_SYSTEM_PROGRAM_ID", "Pubkey::default()", content)
+        # For solana-nostd-entrypoint, the source already has the right pattern
+        # Just do minimal fixes
         content = content.replace("invoke_signed_unchecked", "invoke_signed")
         
-        # Fix undefined references in std section
+        # Fix undefined references in std section 
         content = content.replace("next_account_info", "solana_account_info::next_account_info")
         content = content.replace("system_program_id", "solana_program::system_program::ID")
         content = content.replace("create_account_instruction", "solana_program::system_instruction::create_account")
-        
-        # Normalize key usage patterns
-        content = re.sub(r"\*\s*([A-Za-z_][A-Za-z0-9_]*)\.key\b", r"*\1.key()", content)
-        content = re.sub(
-            r"\(\*\s*([A-Za-z_][A-Za-z0-9_]*)\.key\(\)\)\.into\(\)",
-            r"Pubkey::new_from_array(\1.key().to_bytes())",
-            content,
-        )
-        content = re.sub(
-            r"\*\s*([A-Za-z_][A-Za-z0-9_]*)\.key\(\)",
-            r"Pubkey::new_from_array(\1.key().to_bytes())",
-            content,
-        )
-        
-        # Update AccountMeta helpers
-        content = re.sub(
-            r"AccountMeta::writable_signer\(\s*([A-Za-z_][A-Za-z0-9_]*)\.key\(\)\s*\)",
-            r"AccountMeta::new(Pubkey::new_from_array(\1.key().to_bytes()), true)",
-            content,
-        )
-        
-        # Fix Instruction constructor - nostd needs Vec, not array references
-        content = re.sub(
-            r"accounts: &account_metas,",
-            r"accounts: account_metas.to_vec(),",
-            content
-        )
-        content = re.sub(
-            r"data: &system_instruction_data,",
-            r"data: system_instruction_data.to_vec(),",
-            content
-        )
-        
-        # Remove CpiAccount usage and unsafe blocks
-        content = re.sub(r"CpiAccount", "NoStdAccountInfo", content)
-        # Use specific pattern for unsafe invoke_signed blocks only
-        content = re.sub(r"unsafe\s*\{\s*invoke_signed\(([^}]+)\);\s*\}", r"invoke_signed(\1);", content)
-        
-        # Fix invoke_signed call for nostd - use AccountInfo slice
-        content = re.sub(
-            r"let\s+(\w+)\s*=\s*NoStdAccountInfo::from\(\s*(\w+)\s*\);\s*\n\s*let\s+(\w+)\s*=\s*NoStdAccountInfo::from\(\s*(\w+)\s*\);\s*\n\s*let\s+accounts_for_invoke:\s*\[NoStdAccountInfo;\s*2\]\s*=\s*\[\s*\1,\s*\3\s*\];",
-            r"let accounts_for_invoke = [*\2, *\4];",
-            content,
-            flags=re.MULTILINE
-        )
-        
-        # Fix invoke_signed call to use slice  
-        content = re.sub(
-            r"invoke_signed\(&ix, &accounts_for_invoke, &\[\]\)",
-            r"invoke_signed(&ix, &accounts_for_invoke, &[])",
-            content
-        )
         
         return content
 
@@ -633,6 +657,11 @@ class SolanaProgramRewriter(EntrypointRewriter):
         return False
     
     def apply_specific_fixes(self, content: str) -> str:
+        # Transform next_account_info for pinocchio-std
+        if self.entrypoint_name == "pinocchio-std":
+            content = self._transform_next_account_info_to_array_destructuring(content)
+            content = self._fix_pinocchio_std_api_calls(content)
+        
         # Fix AccountMeta for solana entrypoints
         content = re.sub(r"AccountMeta::writable_signer\(\s*([A-Za-z_][A-Za-z0-9_]*)\.key\(\)\s*\)", 
                         r"AccountMeta::new((*\1.key()).into(), true)", content)
@@ -642,6 +671,39 @@ class SolanaProgramRewriter(EntrypointRewriter):
         content = re.sub(r"^\s*nostd_panic_handler!\(\);\s*\n?", "", content, flags=re.MULTILINE)
         content = re.sub(r"^\s*use\s+[^;]*\bno_allocator\b[^;]*;\s*\n?", "", content, flags=re.MULTILINE)
         content = re.sub(r"^\s*use\s+[^;]*\bnostd_panic_handler\b[^;]*;\s*\n?", "", content, flags=re.MULTILINE)
+        return content
+    
+    def _fix_pinocchio_std_api_calls(self, content: str) -> str:
+        """Fix pinocchio-std specific API calls after next_account_info transformation."""
+        # Fix .key field vs .key() method  
+        content = re.sub(r"(\w+)\.key\b(?!\()", r"\1.key()", content)
+        
+        # The source code now uses proper manual instruction creation, so no API transformations needed
+        return content
+    
+    def _transform_next_account_info_to_array_destructuring(self, content: str) -> str:
+        """Transform next_account_info pattern to array destructuring for pinocchio."""
+        import re
+        
+        # Pattern to match the next_account_info sequence
+        pattern = r"""
+            let\s+account_iter\s*=\s*&mut\s+accounts\.iter\(\);\s*\n
+            \s*let\s+(\w+)\s*=\s*next_account_info\(account_iter\)\?;\s*\n
+            \s*let\s+(\w+)\s*=\s*next_account_info\(account_iter\)\?;\s*\n
+            \s*let\s+(\w+)\s*=\s*next_account_info\(account_iter\)\?;
+        """
+        
+        # Replacement with array destructuring
+        def replacement_func(match):
+            var1, var2, var3 = match.groups()
+            return f"""let [{var1}, {var2}, {var3}] = match accounts {{
+            [{var1[0]}, {var2[0]}, {var3[0]}, ..] => [{var1[0]}, {var2[0]}, {var3[0]}],
+            _ => return Err(ProgramError::NotEnoughAccountKeys),
+        }};"""
+        
+        # Apply the transformation
+        content = re.sub(pattern, replacement_func, content, flags=re.VERBOSE | re.MULTILINE)
+        
         return content
 
 class SolanaProgramMonoRewriter(SolanaProgramRewriter):

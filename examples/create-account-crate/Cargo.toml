@@ -10,4 +10,10 @@ publish = false
 crate-type = ["cdylib", "lib"] # Keep existing types
 
 [dependencies]
-solana-program = { version = "2.2.0", default-features = false }
+pinocchio = { version = "0.8", git = "https://github.com/rustopian/pinocchio.git", branch = "rustopian/slot-hashes-sysvar" }
+
+[features]
+default = []
+std = []
+no_std = []
+host = ["std", "pinocchio/std"]

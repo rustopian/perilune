@@ -286,11 +286,20 @@ def _scan_for_implicit_identifiers(content: str, entrypoint_name: str) -> set:
     if "sol_log" in content:
         found_identifiers.add("sol_log")
 
+    # Scan for fully qualified paths and extract final identifiers
+    qualified_path_pattern = r'\b(\w+(?:::\w+)+)::'
+    qualified_matches = re.findall(qualified_path_pattern, content)
+    for match in qualified_matches:
+        # Extract the final part after the last ::
+        final_part = match.split('::')[-1] if '::' in match else match
+        if final_part:
+            found_identifiers.add(final_part)
+
     # Common Solana identifiers
     common_keywords = [
         "Pubkey", "SystemPubkey", "AccountInfo", "ProgramResult", "ProgramError", 
         "Instruction", "InstructionC", "AccountMeta", "next_account_info", "invoke", "invoke_signed",
-        "syscalls",
+        "syscalls", "create_account", "SYSTEM_PROGRAM_ID",
     ]
     for keyword in common_keywords:
         if re.search(rf"\b{keyword}\b", content):

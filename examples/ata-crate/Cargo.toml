@@ -11,12 +11,15 @@ crate-type = ["cdylib", "lib"] # Keep existing types
 
 [dependencies]
 # For Mollusk SVM testing
-mollusk-svm = { version = "0.1.5", optional = true }
-solana-account = { version = "2.2", optional = true }
-solana-instruction = { version = "2.2", optional = true }
-solana-pubkey = { version = "2.2", optional = true }
-solana-system-interface = { version = "1.0", optional = true }
+mollusk-svm = { version = "0.3.0", optional = true }
+mollusk-svm-bencher = { version = "0.3.0", optional = true }
+solana-account = { version = "2.2.1", optional = true }
+solana-instruction = { version = "2.3.0", optional = true }
+solana-pubkey = { version = "2.4.0", optional = true }
+solana-system-interface = { version = "1.0.0", optional = true }
+serde_json = "1.0"
 
 [features]
 default = []
-std = ["mollusk-svm", "solana-account", "solana-instruction", "solana-pubkey", "solana-system-interface"] 
+std = ["mollusk-svm", "solana-account", "solana-instruction", "solana-pubkey", "solana-system-interface"]
+test-bpf = ["mollusk-svm", "mollusk-svm-bencher", "solana-account", "solana-instruction", "solana-pubkey", "solana-system-interface"] 
